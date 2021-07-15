@@ -47,13 +47,21 @@ find_pc_worlds() {
   exit 1
 }
 
+assert_android_worlds() {
+  if adb shell "[[ -d $ANDROID_WORLDS ]]"
+  then
+    log "Found Android worlds folder: $ANDROID_WORLDS"
+  else
+    err "Could not find Android worlds folder"
+    exit 1
+  fi
+}
+
 migrate() {
   local pc_epoch
   local android_epoch
 
   pc_epoch="$(date -r "$PC_WORLD" "+%s")"
-
-  adb start-server &>/dev/null
   android_epoch="$(adb shell date -r "$ANDROID_WORLDS" "+%s")"
 
   if [[ "$pc_epoch" -gt "$android_epoch" ]]
@@ -78,4 +86,6 @@ migrate() {
 
 assert_deps
 find_pc_worlds
+adb start-server &>/dev/null
+assert_android_worlds
 migrate
